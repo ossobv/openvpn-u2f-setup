@@ -18,7 +18,7 @@ Components
 
   - a `SystemD ask-password agent
     <https://systemd.io/PASSWORD_AGENTS/>`_ to pick up
-    ``auth-user-pass`` requests from OpenVPN.
+    ``auth-user-pass`` requests from OpenVPN: ``openvpn-u2f-ask-password``
 
 * OpenVPN server:
 
@@ -27,7 +27,8 @@ Components
   - u2f-server (client application);
 
   - an `auth-pass-verify` script that receives the *YubiKey* key handle
-    *as username* and the challenge and response *as password*.
+    *as username* and the challenge and response *as password*:
+    ``openvpn-verify``
 
 The ``u2f-host(1)`` and ``u2f-server(1)`` CLI applications are in charge
 of the U2F heavy lifting. *YubiKey* key handles, challenges and
@@ -44,10 +45,10 @@ Caveats
   should be the same everywhere, we do guard against replay attacks
   (outside a short time window).
 
-* Right now the *SystemD ask-password* helper does not know *who* is
-  querying for credentials: this means that if you secure multiple VPNs
-  with this method, *you must reuse a single YubiKey public key
-  registration.*
+* Right now ``openvpn-u2f-ask-password`` (*SystemD ask-password* helper)
+  does not know *who* is querying for credentials: this means that if
+  you secure multiple VPNs with this method, *you must reuse a single
+  YubiKey public key registration.*
 
 These two caveats are both due to the fact that openvpn does not
 support passing a challenge to the client. If it did, we could pass
@@ -79,9 +80,9 @@ client.conf:
 
 ::
 
-    # In a SystemD linked OpenVPN, this will trigger ask-password support.
-    # You'll need to have a custom ask-password daemon available to
-    # notify you that YubiKey authentication is needed.
+    # When OpenVPN is tied to SystemD, this will trigger ask-password support.
+    # You'll need to have the openvpn-u2f-ask-password daemon available to
+    # notify you that YubiKey authentication is needed and interact with it.
     auth-user-pass
 
 
@@ -89,7 +90,8 @@ CREATING HANDLES
 ----------------
 
 On your laptop/desktop, ``u2f-host(1)`` needs to be installed. It will
-handle the communication with the ask-password helper.
+handle the communication with the *YubiKey* through the
+``openvpn-u2f-ask-password`` helper.
 
 When configuring the U2F support, you will need to run a registration
 step, preferably directly on the *OpenVPN* server:
@@ -140,10 +142,30 @@ It will say ``Registration successful`` and you should now have two files:
     # cat /etc/openvpn/u2f/$CN/keyhandle.dat
     b6Ac2BI...
 
-You'll need to pass this keyhandle to the ask-password helper.
+You'll need to pass this keyhandle to ``openvpn-u2f-ask-password``.
+Currently it is hardcoded at the top of the file.
 
 
 Configuring the ask-password helper
 -----------------------------------
 
-...
+* Install ``openvpn-u2f-ask-password`` in ``/usr/local/bin``.
+
+* Edit it, and set ``KEYHANDLE`` at the top of the file.
+
+* Ensure that your have all dependencies (``python3-pyinotify``).
+
+* Configure so it auto-starts, using *SystemD* (see
+  ``openvpn-u2f-ask-password.service``).
+
+
+Running
+-------
+
+If everything is properly configured, a restart of your VPN connection
+should trigger a blinking *YubiKey* light. Touch it to log in.
+
+Or don't and confirm that you cannot log in.
+
+While testing, you can start ``openvpn-u2f-ask-password`` from the
+command line to get a better feel of what's going on.
