@@ -9,26 +9,29 @@ Components
 
 * OpenVPN client:
 
-  - openvpn daemon, with sane certificates already set up;
+  - ``openvpn`` daemon, with an already sane configuration and proper
+    certificates;
 
   - a *YubiKey* or other U2F/FIDO2 device;
 
-  - ``u2f-host`` CLI application to sign a challenge based on the
+  - ``u2f-host`` command line tool to sign a challenge based on the
     current timestamp;
 
-  - a `SystemD ask-password agent [ext]
+  - a `SystemD ask-password agent (external link)
     <https://systemd.io/PASSWORD_AGENTS/>`_ to pick up
-    ``auth-user-pass`` requests from *OpenVPN*: ``openvpn-u2f-ask-password``
+    ``auth-user-pass`` requests from *OpenVPN*:
+    `<openvpn-u2f-ask-password>`_
 
 * OpenVPN server:
 
-  - openvpn daemon, with sane certificates already set up;
+  - ``openvpn`` daemon, with an already sane configuration and proper
+    certificates;
 
-  - ``u2f-server`` CLI application;
+  - ``u2f-server`` command line tool to verify the challenge signature;
 
   - an ``auth-pass-verify`` script that receives the *U2F* key handle
     *as username* and the challenge and response *as password*:
-    `openvpn-verify <./openvpn-verify>`_
+    `<openvpn-verify>`_
 
 The ``u2f-host(1)`` and ``u2f-server(1)`` CLI applications are in charge
 of the *U2F* heavy lifting. The *key handles*, challenges and
@@ -152,7 +155,7 @@ You'll need this keyhandle on the client side as well. See below.
 Configuring the ask-password helper
 -----------------------------------
 
-* Install ``openvpn-u2f-ask-password`` in ``/usr/local/bin``.
+* Install `<openvpn-u2f-ask-password>`_ in ``/usr/local/bin``.
 
 * Copy your personal ``keyhandle.dat`` from the server to
   ``/etc/openvpn/client/VPN_NAME/keyhandle.dat`` when ``VPN_NAME.conf``
@@ -162,7 +165,7 @@ Configuring the ask-password helper
   optionally ``python3-gi`` for *GNOME* notification integration).
 
 * Configure so it auto-starts, using *SystemD* (see
-  ``openvpn-u2f-ask-password.service``).
+  `<openvpn-u2f-ask-password.service>`_).
 
 
 Running
@@ -184,7 +187,10 @@ BUGS/TODO
 * Document why you'd want to be root. And what you need to not be root.
 
 * Check whether we can use ``auth-token`` and ``auth-gen-token`` stuff
-  with a client-connect script.
+  with a client-connect script; this might fix the passing of challenges
+  and key handles...
 
 * Maybe we should allow configurations without keyhandle.dat and assume
   that their credentials are handled by someone else.
+
+* Suggest/clarify what to do with 'myorigin'.

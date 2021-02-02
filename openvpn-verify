@@ -1,4 +1,18 @@
 #!/bin/sh -u
+# openvpn-u2f-setup/openvpn-verify -- verify U2F keys on the OpenVPN server
+# Copyright (C) 2021, Walter Doekes, OSSO B.V.
+#
+# This file is part of openvpn-u2f-setup. It is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General
+# Public License as published by the Free Software Foundation, version 3
+# or any later version.
+#
+# For documentation, sources and the full license, go to:
+# https://github.com/ossobv/openvpn-u2f-setup
+#
+# This script needs to be installed as 'auth-user-pass-verify' script on
+# the openvpn server.
+
 ORIGIN=pam://myorigin   # u2f-server is picky, needs http(s):// or pam://
 APPID=myappid           # used? or not?
 
