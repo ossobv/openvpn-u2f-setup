@@ -181,9 +181,10 @@ command line (as root) to get a better feel of what's going on.
 BUGS/TODO
 =========
 
-* Right now, the ``openvpn-u2f-ask-password`` handler does not detect
-  when ask-password requests go stale / are removed. So if you don't
-  insert a key, you will not get rid of the "please insert u2f"
-  notification.
-
 * Document why you'd want to be root. And what you need to not be root.
+
+* Check whether we can use ``auth-token`` and ``auth-gen-token`` stuff
+  with a client-connect script.
+
+* Maybe we should allow configurations without keyhandle.dat and assume
+  that their credentials are handled by someone else.
