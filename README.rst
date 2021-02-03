@@ -174,7 +174,8 @@ You'll need this keyhandle on the client side as well. See below.
 Configuring the ask-password helper
 -----------------------------------
 
-* Install `<openvpn-u2f-ask-password>`_ in ``/usr/local/bin``.
+* Install `<openvpn-u2f-ask-password>`_ (or simply this repository) in
+  ``/etc/openvpn/openvpn-u2f-setup/``.
 
 * Copy your personal ``keyhandle.dat`` from the server to
   ``/etc/openvpn/client/VPN_NAME/keyhandle.dat`` when ``VPN_NAME.conf``
@@ -202,6 +203,14 @@ command line (as root) to get a better feel of what's going on.
 
 F.A.Q.
 ======
+
+* How do I know when to touch the *U2F device*?
+
+  If you're using *GNOME* on *Ubuntu/Focal*, it should look somewhat
+  like this:
+
+  .. image:: ./openvpn-u2f-ask-password.gif
+    :alt: GUI notification on right side
 
 * ``u2f-host`` claims my *YubiKey* is not an *U2F* device:
 
