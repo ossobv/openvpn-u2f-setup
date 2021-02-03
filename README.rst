@@ -23,7 +23,7 @@ Components
   - ``openvpn`` daemon, with an already sane configuration and proper
     certificates;
 
-  - a *YubiKey* or other U2F/FIDO2 device;
+  - a *YubiKey* or other *U2F/FIDO2* device;
 
   - ``u2f-host`` command line tool to sign a challenge based on the
     current timestamp;
@@ -100,7 +100,7 @@ client.conf:
     auth-retry interact
     reneg-sec 0  # let the server decide when to renegotiate keys
 
-For clients where U2F is explicitly disabled, you will still need dummy
+For clients where *U2F* is explicitly disabled, you will still need dummy
 credentials::
 
     # [OSSO B.V. openvpn-u2f-setup]
@@ -114,7 +114,7 @@ CREATING HANDLES
 ----------------
 
 On your laptop/desktop, ``u2f-host(1)`` needs to be installed. It will
-handle the communication with the *U2F device (Yubikey)* through the
+handle the communication with the *U2F device (YubiKey)* through the
 ``openvpn-u2f-ask-password`` helper.
 
 When configuring the *U2F* support, you will need to run a registration
@@ -200,14 +200,45 @@ While testing, you can start ``openvpn-u2f-ask-password`` from the
 command line (as root) to get a better feel of what's going on.
 
 
+F.A.Q.
+======
+
+* ``u2f-host`` claims my *YubiKey* is not an *U2F* device:
+
+  .. code-block:: console
+
+    $ u2f-host -a register -o pam://openvpn-server
+    { "challenge": "VIrN...", "version": "U2F_V2", "appId": "openvpn" }
+    ^D
+    error: u2fh_devs_discover (-5): cannot find U2F device
+
+  This is might be because it is not enabled. See ``ykman(1)`` (from the
+  *yubikey-manager* package):
+
+  .. code-block:: console
+
+    $ ykman mode
+    Current connection mode is: OTP+CCID
+    Supported USB interfaces are: OTP, FIDO, CCID
+
+  .. code-block:: console
+
+    $ ykman mode OTP+FIDO+CCID
+    Set mode of YubiKey to OTP+FIDO+CCID? [y/N]: y
+    Mode set! You must remove and re-insert your YubiKey for this change
+    to take effect.
+
+
 BUGS/TODO
 =========
+
+* When everything is well-tested and works, we'll need to swap the
+  default of ignoring users without keyhandle.dat to prohibit. We'll
+  probably still want some way to allow certain certificates to connect
+  without *U2F* though. (For systems where there is no human interaction.)
 
 * Document why you'd want to be root. And what you need to not be root.
 
 * Check whether we can use ``auth-token`` and ``auth-gen-token`` stuff
   with a client-connect script; this might fix the passing of challenges
   and key handles...
-
-* Maybe we should allow configurations without keyhandle.dat and assume
-  that their credentials are handled by someone else.
