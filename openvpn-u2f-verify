@@ -13,8 +13,14 @@
 # This script needs to be installed as 'auth-user-pass-verify' script on
 # the openvpn server.
 
-ORIGIN=pam://myorigin   # u2f-server is picky, needs http(s):// or pam://
-APPID=myappid           # used? or not?
+# This must be the same on both sides for each new challenge. It's prefixed
+# with "pam://" because the u2f-server is picky and requires either that or
+# "http(s)://".
+ORIGIN=pam://openvpn-server
+# This must be the same for the lifetime of the key handle
+# (registration). If the appId is different, the u2host application
+# refuses to sign (-6, authenticator error).
+APPID=openvpn
 
 # Here we must choose key handles
 if ! echo -n "$X509_0_CN" | grep -q '[A-Za-z0-9_][A-Za-z0-9_.-]*$'; then

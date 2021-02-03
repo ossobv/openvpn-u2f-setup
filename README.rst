@@ -33,6 +33,10 @@ Components
     ``auth-user-pass`` requests from *OpenVPN*:
     `<openvpn-u2f-ask-password>`_
 
+    *(Do not forget to add this option to the client config. The OpenVPN
+    client will not complain, but simply fail to set up the VPN. Even
+    clients with explicitly disabled U2F need to provide something.)*
+
 The ``u2f-host(1)`` and ``u2f-server(1)`` CLI applications are in charge
 of the *U2F* heavy lifting. The *key handles*, challenges and
 responses are sent to the *OpenVPN* server using the *username* and
@@ -68,8 +72,10 @@ server.conf:
 
 ::
 
-    # Use via-file because we'd have to set --script-security 3 for via-env:
+    # [OSSO B.V. openvpn-u2f-setup]
+    # (Use via-file because we'd have to set --script-security 3 for via-env.)
     auth-user-pass-verify /etc/openvpn/openvpn-u2f-setup/openvpn-u2f-verify via-file
+    reneg-sec 28800  # 8 hours so we don't need to renegotiate U2F too often
 
 Further, you'll need to create a ``keyhandle.dat`` and ``userkey.dat``
 and place them in ``/etc/openvpn/u2f/<CN>/`` where ``<CN>`` is the
@@ -86,10 +92,22 @@ client.conf:
 
 ::
 
+    # [OSSO B.V. openvpn-u2f-setup]
     # When OpenVPN is tied to SystemD, this will trigger ask-password support.
     # You'll need to have the openvpn-u2f-ask-password daemon available to
     # notify you that U2F authentication is needed and interact with it.
     auth-user-pass
+    auth-retry interact
+    reneg-sec 0  # let the server decide when to renegotiate keys
+
+For clients where U2F is explicitly disabled, you will still need dummy
+credentials::
+
+    # [OSSO B.V. openvpn-u2f-setup]
+    # Dummy auth user/pass for VPN clients with U2F explicitly disabled.
+    # (Any file with 2 or more lines will do.)
+    auth-user-pass /etc/protocols
+    auth-retry nointeract
 
 
 CREATING HANDLES
@@ -105,7 +123,7 @@ step, preferably directly on the *OpenVPN* server:
 .. code-block:: console
 
     # CN=yourCommonName && mkdir -p /etc/openvpn/u2f/$CN
-    # ORIGIN=pam://myorigin && APPID=myappid
+    # ORIGIN=pam://openvpn-server && APPID=openvpn
     # umask 0077
 
 .. code-block:: console
@@ -113,18 +131,18 @@ step, preferably directly on the *OpenVPN* server:
     # u2f-server -a register -o $ORIGIN -i $APPID \
         -k /etc/openvpn/u2f/$CN/keyhandle.dat \
         -p /etc/openvpn/u2f/$CN/userkey.dat
-    { "challenge": "nO72...", "version": "U2F_V2", "appId": "myappid" }
+    { "challenge": "nO72...", "version": "U2F_V2", "appId": "openvpn" }
 
 Feed this challenge to ``u2f-host``:
 
 .. code-block:: console
 
-    $ ORIGIN=pam://myorigin
+    $ ORIGIN=pam://openvpn-server
 
 .. code-block:: console
 
     $ u2f-host -a register -o $ORIGIN <<EOF
-    { "challenge": "nO72...", "version": "U2F_V2", "appId": "myappid" }
+    { "challenge": "nO72...", "version": "U2F_V2", "appId": "openvpn" }
     EOF
 
 Now touch the *U2F* device. The ``u2f-host`` will output something like this:
@@ -193,5 +211,3 @@ BUGS/TODO
 
 * Maybe we should allow configurations without keyhandle.dat and assume
   that their credentials are handled by someone else.
-
-* Suggest/clarify what to do with 'myorigin'.
