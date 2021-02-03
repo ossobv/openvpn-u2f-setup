@@ -1,5 +1,5 @@
 #!/bin/sh -u
-# openvpn-u2f-setup/openvpn-verify -- verify U2F keys on the OpenVPN server
+# openvpn-u2f-setup/openvpn-u2f-verify -- verify U2F keys on the OpenVPN server
 # Copyright (C) 2021, Walter Doekes, OSSO B.V.
 #
 # This file is part of openvpn-u2f-setup. It is free software: you can

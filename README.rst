@@ -7,6 +7,17 @@ authentication factor for *OpenVPN* logins.
 Components
 ----------
 
+* OpenVPN server:
+
+  - ``openvpn`` daemon, with an already sane configuration and proper
+    certificates;
+
+  - ``u2f-server`` command line tool to verify the challenge signature;
+
+  - an ``auth-user-pass-verify`` script that receives the *U2F* key handle
+    *as username* and the challenge and response *as password*:
+    `<openvpn-u2f-verify>`_
+
 * OpenVPN client:
 
   - ``openvpn`` daemon, with an already sane configuration and proper
@@ -21,17 +32,6 @@ Components
     <https://systemd.io/PASSWORD_AGENTS/>`_ to pick up
     ``auth-user-pass`` requests from *OpenVPN*:
     `<openvpn-u2f-ask-password>`_
-
-* OpenVPN server:
-
-  - ``openvpn`` daemon, with an already sane configuration and proper
-    certificates;
-
-  - ``u2f-server`` command line tool to verify the challenge signature;
-
-  - an ``auth-pass-verify`` script that receives the *U2F* key handle
-    *as username* and the challenge and response *as password*:
-    `<openvpn-verify>`_
 
 The ``u2f-host(1)`` and ``u2f-server(1)`` CLI applications are in charge
 of the *U2F* heavy lifting. The *key handles*, challenges and
@@ -69,13 +69,13 @@ server.conf:
 ::
 
     # Use via-file because we'd have to set --script-security 3 for via-env:
-    auth-user-pass-verify /etc/openvpn/openvpn-u2f-setup/openvpn-verify via-file
+    auth-user-pass-verify /etc/openvpn/openvpn-u2f-setup/openvpn-u2f-verify via-file
 
 Further, you'll need to create a ``keyhandle.dat`` and ``userkey.dat``
 and place them in ``/etc/openvpn/u2f/<CN>/`` where ``<CN>`` is the
 certificate *commonName*. See CREATING HANDLES below.
 
-And ``/etc/openvpn/openvpn-u2f-setup/openvpn-verify`` needs to work. It
+And ``/etc/openvpn/openvpn-u2f-setup/openvpn-u2f-verify`` needs to work. It
 will mainly require you to have ``u2f-server(1)`` installed.
 
 
