@@ -140,7 +140,8 @@ It will say ``Registration successful`` and you should now have two files:
 
 .. code-block:: console
 
-    # ls /etc/openvpn/u2f/$CN
+    # ls -l /etc/openvpn/u2f/$CN
+    total 8
     -rw------- 1 root root 86 jan 29 17:47 keyhandle.dat
     -rw------- 1 root root 65 jan 29 17:47 userkey.dat
 

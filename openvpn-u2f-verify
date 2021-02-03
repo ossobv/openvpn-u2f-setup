@@ -53,11 +53,11 @@ response=${password#*/}     # extract response from password
 # create the same challenge as the client created. We're using a 32
 # bytes challenge, encoded in urlsafe-base64. The u2f-server(1) is picky
 # about this.
-echo "$timestamp" | grep -E '^[0-9]{10}$' || exit 1  # 10-digit unixtime
+echo "$timestamp" | grep -qE '^[0-9]{10}$' || exit 1  # 10-digit unixtime
 timedelta=$(( $(date +'%s') - timestamp ))  # how old is the challenge?
 b64challenge=$(  # <timestamp>Z<timestamp>Z<timestamp> = 32 octets
-    echo -n "${challenge}Z${challenge}Z${challenge}" |
-    base64 -w0 | tr '+' '-' | tr '/' '_' | tr -d '=')
+    echo -n "${timestamp}Z${timestamp}Z${timestamp}" |
+    base64 -w0 | tr '+' '-' | tr '/' '_' | tr -d '=') || exit 1
 
 # Validate the handle:
 # TODO: we could allow multiple key_handles for a single user
@@ -72,8 +72,9 @@ test "$timedelta" -lt -2 -o "$timedelta" -ge 8 && echo BAD_TIMESTAMP && exit 1
 # NOTE: This is the hashed bit. This must be **exactly** what u2f-host(1) feeds
 # to the YubiKey, in this order, including whitespace around the braces.a
 #
+origin=$(echo "$ORIGIN" | sed -e 's#/#\\/#g')
 client_data="{ \"challenge\": \"$b64challenge\", \"origin\":\
- \"pam:\\/\\/myorigin\", \"typ\": \"navigator.id.getAssertion\" }"
+ \"$origin\", \"typ\": \"navigator.id.getAssertion\" }"
 client_data=$(echo -n "$client_data" | base64 -w0)
 
 # Build validation request for u2f-server(1), including the challenge
@@ -87,9 +88,8 @@ echo "$request" |
     u2f-server -a authenticate -o "$ORIGIN" -i "$APPID" \
         -k "$handles_path/keyhandle.dat" -p "$handles_path/userkey.dat" \
         -c "$b64challenge"
-ret=$?
+u2f_auth_ok=$?
+test $u2f_auth_ok -ne 0 && echo "BAD_U2F" && exit 1
 
-test $? -ne 0 && echo "BAD_U2F" && exit 1
-
-# All is good.
-exit 0
+# Last line. Only exit with success if auth was good:
+test $u2f_auth_ok -eq 0
