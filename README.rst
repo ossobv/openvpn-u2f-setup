@@ -212,6 +212,15 @@ F.A.Q.
   .. image:: ./openvpn-u2f-ask-password.gif
     :alt: GUI notification on right side
 
+* ``openvpn-u2f-ask-password`` reports: ``error (-6): authenticator error``
+
+   This generally means one of two things:
+
+   - the *wrong U2F device* is inserted, or
+
+   - the *key handle* was generated for a different APPID
+     (did you change it after handling the registration step?)
+
 * ``u2f-host`` claims my *YubiKey* is not an *U2F* device:
 
   .. code-block:: console
@@ -247,7 +256,11 @@ BUGS/TODO
   without *U2F* though. (For systems where there is no human interaction.)
 
 * Document why you'd want to be root. And what you need to not be root.
+  (umask? Or fix key-read permissions to the openvpn-user?)
 
-* Check whether we can use ``auth-token`` and ``auth-gen-token`` stuff
-  with a client-connect script; this might fix the passing of challenges
-  and key handles...
+* We may want to suggest replacing the ``reneg-sec`` timeout with
+  ``auth-gen-token`` which will let renegotiations use a
+  server-generated ``auth-token`` instead of the user/password combo,
+  which would force the user to press the device. (I'm pretty sure
+  (a pushed) ``auth-token`` cannot be used as a means to pass key
+  handles (or challenges) to the client *before* user/pass auth.)
