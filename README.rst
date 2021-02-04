@@ -170,9 +170,17 @@ It will say ``Registration successful`` and you should now have two files:
 
 You'll need this keyhandle on the client side as well. See below.
 
+**NOTE: If your openvpn server runs as the openvpn user, make sure the
+key files on the server are readable by the auth-user-pass-verify
+script:**
 
-Configuring the ask-password helper
------------------------------------
+.. code-block:: console
+
+    # chown -R openvpn: /etc/openvpn/u2f/$CN
+
+
+Configuring the ask-password helper on the client
+-------------------------------------------------
 
 * Install `<openvpn-u2f-ask-password>`_ (or simply this repository) in
   ``/etc/openvpn/openvpn-u2f-setup/``.
