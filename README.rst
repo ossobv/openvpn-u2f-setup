@@ -334,8 +334,6 @@ F.A.Q.
 BUGS/TODO
 =========
 
-* Use ``Icon`` value as "image".
-
 * Fix better sane /u2f/ keyhandle.dat paths:
 
   - for less confusion (difference between client and server)
