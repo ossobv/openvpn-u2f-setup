@@ -68,8 +68,10 @@ b64challenge=$(  # <timestamp>Z<timestamp>Z<timestamp> = 32 octets
 # Validate the handle:
 # TODO: we could allow multiple key_handles for a single user
 test "$username" != "$key_handle" && echo BAD_USER_HANDLE && exit 1
-# Validate the timestamp (=challenge) to avoid replay attacks:
-test "$timedelta" -lt -2 -o "$timedelta" -ge 8 && echo BAD_TIMESTAMP && exit 1
+# Validate the timestamp (=challenge) to avoid replay attacks. We allow 20
+# seconds of room due to network latency and the optional administrator
+# password the the user _also_ has to enter.
+test "$timedelta" -lt -2 -o "$timedelta" -ge 20 && echo BAD_TIMESTAMP && exit 1
 
 # NOTE: we did not include the JSON verbatim, because the user/password
 # fields sent by openvpn are limited in size. That means that creating
