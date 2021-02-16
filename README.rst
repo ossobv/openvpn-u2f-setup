@@ -254,7 +254,8 @@ Configuring the ask-password helper on the client
 
 * Copy your personal ``keyhandle.dat`` from the server to
   ``/etc/openvpn/client/VPN_NAME/keyhandle.dat`` when ``VPN_NAME.conf``
-  holds your VPN config.
+  holds your VPN config. If you run the
+  `<openvpn-u2f-ask-password.service>`_ as a user you can use ``~/.u2f_keys``.
 
 * Ensure that your have all dependencies (``python3-pyinotify`` and
   optionally ``python3-gi`` for *GNOME* notification integration).
@@ -273,7 +274,7 @@ to log in.
 Or don't touch it, and confirm that you cannot log in.
 
 While testing, you can start ``openvpn-u2f-ask-password`` from the
-command line (as root) to get a better feel of what's going on.
+command line to get a better feel of what's going on.
 
 
 F.A.Q.
