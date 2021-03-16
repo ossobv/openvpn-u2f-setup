@@ -224,19 +224,6 @@ It will say ``Registration successful`` and you should now have two files:
     -rw------- 1 root root 86 jan 29 17:47 keyhandle.dat
     -rw------- 1 root root 65 jan 29 17:47 userkey.dat
 
-(For the curious: the `details of the registrationData layout
-<https://fidoalliance.org/specs/u2f-specs-1.0-bt-nfc-id-amendment/fido-u2f-raw-message-formats.html#registration-response-message-success>`_
-(external link) or `example registrationData extraction
-<https://github.com/Yubico/python-u2flib-server/blob/b2053563d4cdd530f254a863e59af11235bfde8f/u2flib_server/model.py#L156-L164>`_
-(source code).)
-
-.. code-block:: console
-
-    # cat /etc/openvpn/u2f/$CN/keyhandle.dat
-    b6Ac2BI...
-
-You'll need this *key handle* on the client side as well. See below.
-
 **NOTE: If your openvpn server runs as the openvpn user, make sure the
 key files on the server are readable by the auth-user-pass-verify
 script:**
@@ -244,6 +231,21 @@ script:**
 .. code-block:: console
 
     # chown -R openvpn: /etc/openvpn/u2f/$CN
+
+A handle consists of printable characters. You'll need this *key handle* on
+the client side as well. See below at `Configuring the ask-password
+helper on the client`_.
+
+.. code-block:: console
+
+    # cat /etc/openvpn/u2f/$CN/keyhandle.dat
+    b6Ac2BI...
+
+(For the curious: the `details of the registrationData layout
+<https://fidoalliance.org/specs/u2f-specs-1.0-bt-nfc-id-amendment/fido-u2f-raw-message-formats.html#registration-response-message-success>`_
+(external link) or `example registrationData extraction
+<https://github.com/Yubico/python-u2flib-server/blob/b2053563d4cdd530f254a863e59af11235bfde8f/u2flib_server/model.py#L156-L164>`_
+(source code).)
 
 
 Configuring the ask-password helper on the client
