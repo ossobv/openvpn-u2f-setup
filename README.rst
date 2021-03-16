@@ -335,6 +335,11 @@ F.A.Q.
 BUGS/TODO
 =========
 
+* See if we want to use the server-side openvpn management interface of
+  ``--management`` through which we can send a ``client-deny`` command
+  which takes a ``client_reason`` through which we could push a
+  challenge... see: ./doc/management-notes.txt in the openvpn tree.
+
 * Fix better sane /u2f/ keyhandle.dat paths:
 
   - for less confusion (difference between client and server)
