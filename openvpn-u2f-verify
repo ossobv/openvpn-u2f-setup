@@ -50,6 +50,61 @@ exec 3<"$1" || exit 1
 read username <&3  # $key_handle
 read password <&3  # $timestamp/$response
 
+# -- BEGIN OPTIONAL YUBICO OTP -----------------------------------------
+# Two times Yubico as fallback? For those that to not have U2F support?
+# Place a "yubico.id" file in the handles path with the handle in it:
+# # sed -e 's/.\{32\}$//' >"$handles_path/yubico.id"  # PRESS + ^D
+# This *does* require access to the internet (and a working curl), so
+# this is not the recommended method.
+if test "${#username}" = "${#password}" -a -f "$handles_path/yubico.id"; then
+    # The yubico identifier is the first 2..16 chars. The rest should be 32
+    # chars (in modhex).
+    yubico_id=$(cat "$handles_path/yubico.id")
+    otp1=${username#$yubico_id}
+    otp2=${password#$yubico_id}
+    if echo "$otp1$otp2" | grep -qE '^[a-z]{64}$'; then
+        # Logic now dicates that we have two 32 byte sanitized otps, that we
+        # can safely send for validation.
+        _yubico_verify() {
+            set -u
+            local yubico_client_id=1  # needed?
+            # api{,2,3,4,5}.yubico.com
+            local yubico_uri="https://$1/wsapi/2.0/verify"
+            local otp="$2"
+            local nonce=$(dd if=/dev/urandom bs=20 count=1 2>/dev/null |
+                sha1sum | cut -f1 -d' ')
+            # We skip adding a signature for yubico_client_id 1. The server
+            # does not mandate it at the moment.
+            local url="$yubico_uri?id=$yubico_client_id&otp=$otp&nonce=$nonce"
+            echo "DEBUG: yubico curl: $url" >&2
+            resp=$(timeout 3s curl --fail -sS "$url") || exit 1
+            resp=$(echo "$resp" | tr -d '\r')  # no CR in EOL please
+            if echo "$resp" | grep -q "^otp=$otp$" &&
+                    echo "$resp" | grep -q "^nonce=$nonce$" &&
+                    echo "$resp" | grep -q "^status=OK$"; then
+                echo "DEBUG:" $resp >&2
+                return
+            fi
+            echo "REJECTED:" $resp >&2
+            false
+        }
+        yubico_verify() {
+            ok=0
+            for host in api3.yubico.com api5.yubico.com; do
+                _yubico_verify "$host" "$1" && ok=1 && break
+            done
+            test $ok -eq 1
+        }
+        if yubico_verify "$yubico_id$otp1" &&
+                yubico_verify "$yubico_id$otp2"; then
+            echo "DEBUG: 2x PASS" >&2
+            exit 0
+        fi
+        exit 1
+    fi
+fi
+# -- END OPTIONAL YUBICO OTP -------------------------------------------
+
 # Get values:
 key_handle=$(cat "$handles_path/keyhandle.dat") || exit 1
 timestamp=${password%%/*}   # extract timestamp from password
