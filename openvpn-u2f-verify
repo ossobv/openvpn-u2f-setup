@@ -115,7 +115,8 @@ response=${password#*/}     # extract response from password
 # bytes challenge, encoded in urlsafe-base64. The u2f-server(1) is picky
 # about this.
 echo "$timestamp" | grep -qE '^[0-9]{10}$' || exit 1  # 10-digit unixtime
-timedelta=$(( $(date +'%s') - timestamp ))  # how old is the challenge?
+ltimestamp=$(date +'%s')
+latency=$(( ltimestamp - timestamp ))  # how old is the challenge?
 b64challenge=$(  # <timestamp>Z<timestamp>Z<timestamp> = 32 octets
     echo -n "${timestamp}Z${timestamp}Z${timestamp}" |
     base64 -w0 | tr '+' '-' | tr '/' '_' | tr -d '=') || exit 1
@@ -126,7 +127,10 @@ test "$username" != "$key_handle" && echo BAD_USER_HANDLE && exit 1
 # Validate the timestamp (=challenge) to avoid replay attacks. We allow 20
 # seconds of room due to network latency and the optional administrator
 # password the the user _also_ has to enter.
-test "$timedelta" -lt -2 -o "$timedelta" -ge 20 && echo BAD_TIMESTAMP && exit 1
+test "$latency" -lt -2 &&
+    echo "FUTURE_TIMESTAMP [local=$ltimestamp remote=$timestamp]" && exit 1
+test "$latency" -gt 20 &&
+    echo "OLD_TIMESTAMP [local=$ltimestamp remote=$timestamp]" && exit 1
 
 # NOTE: we did not include the JSON verbatim, because the user/password
 # fields sent by openvpn are limited in size. That means that creating
