@@ -58,7 +58,7 @@ challenge.
 *Note that using the timestamp is no less secure than the ubiqitous
 time-based one-time passwords (TOTP) as provided by the Google
 Authenticator and Authy apps.* And on all other fronts, using a hardware
-*U2F* device with a public/private key is *more* secure because *there
+*U2F device* with a public/private key is *more* secure because *there
 is no shared secret* and *the private key cannot be extracted from the
 hardware device.*
 
@@ -206,7 +206,7 @@ Feed this challenge (the entire JSON blob) to ``u2f-host``:
     { "challenge": "nO72...", "version": "U2F_V2", "appId": "openvpn" }
     EOF
 
-Now touch the *U2F* device. The ``u2f-host`` will output something like this:
+Now touch the *U2F device*. The ``u2f-host`` will output something like this:
 
 .. code-block:: data
 
@@ -252,18 +252,30 @@ Configuring the ask-password helper on the client
 -------------------------------------------------
 
 * Install `<openvpn-u2f-ask-password>`_ (or simply this repository) in
-  ``/etc/openvpn/openvpn-u2f-setup/``.
+  ``/etc/openvpn/openvpn-u2f-setup/``::
 
-* Copy your personal ``keyhandle.dat`` from the server to
-  ``/etc/openvpn/client/VPN_NAME/keyhandle.dat`` when ``VPN_NAME.conf``
-  holds your VPN config. If you run the
-  `<openvpn-u2f-ask-password.service>`_ as a user you can use ``~/.u2f_keys``.
+    cd /etc/openvpn
+    git clone https://github.com/ossobv/openvpn-u2f-setup.git
+
+* Set the the *OpenVPN* configuration as found in `OpenVPN client setup`_.
+
+* Copy your personal ``keyhandle.dat`` from the server. If you run the
+  `<openvpn-u2f-ask-password.service>`_ as a user, call it
+  ``~/.u2f_keys`` (a file). Otherwise call it
+  ``/etc/openvpn/client/VPN_NAME/keyhandle.dat`` (assuming ``VPN_NAME.conf``
+  holds your VPN config).
 
 * Ensure that your have all dependencies (``python3-pyinotify`` and
-  optionally ``python3-gi`` for *GNOME* notification integration).
+  optionally ``python3-gi`` for *GNOME* notification integration, and
+  ``u2f-host`` to for communication with the *U2F device*)::
+
+    apt-get install python3-pyinotify python3-gi u2f-host
 
 * Configure so it auto-starts, using *SystemD* (see
-  `<openvpn-u2f-ask-password.service>`_).
+  `<openvpn-u2f-ask-password.service>`_)::
+
+    systemctl start [--user] openvpn-u2f-ask-password.service
+    systemctl enable [--user] openvpn-u2f-ask-password.service
 
 
 Running
@@ -308,7 +320,7 @@ F.A.Q.
   - the *key handle* was generated for a different APPID
     (did you change it after performing the registration step?)
 
-* ``u2f-host`` claims my *YubiKey* is not an *U2F* device:
+* ``u2f-host`` claims my *YubiKey* is not an *U2F device*:
 
   .. code-block:: console
 
