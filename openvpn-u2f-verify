@@ -41,8 +41,21 @@ handles_path=/etc/openvpn/u2f/$X509_0_CN
 # YubiKey is inserted. The user will need the contents of 'keyhandle.dat' for
 # their auth-user handling. (See: systemd-openvpn-u2f-auth)
 
-# OPTIONAL, allow everyone who does not have a path/configuration:
-test -d "$handles_path" || exit 0  # NO CONFIG => SINGLE FACTOR ALLOWED
+# Allow everyone who does not have a path/configuration?
+if ! test -d "$handles_path"; then
+    if true; then
+        echo "INFO: No U2F config in $handles_path -- disallowing.." >&2
+        exit 1
+    else
+        echo "WARNING: No U2F config in $handles_path -- allowing for now.." >&2
+        exit 0  # NO CONFIG => SINGLE FACTOR ALLOWED
+    fi
+fi
+
+if test -f "$handles_path/allow-without-u2f"; then
+     echo "INFO: Allowing because $handles_path/allow-without-u2f" >&2
+     exit 0
+fi
 
 # Read username and password:
 # auth-user-pass ... via-file will pass user/pass through a file on $1.
@@ -131,6 +144,7 @@ test "$latency" -lt -2 &&
     echo "FUTURE_TIMESTAMP [local=$ltimestamp remote=$timestamp]" && exit 1
 test "$latency" -gt 20 &&
     echo "OLD_TIMESTAMP [local=$ltimestamp remote=$timestamp]" && exit 1
+echo "(Handle path $handles_path, latency $latency)" >&2
 
 # NOTE: we did not include the JSON verbatim, because the user/password
 # fields sent by openvpn are limited in size. That means that creating
