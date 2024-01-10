@@ -132,7 +132,7 @@ server.conf:
 
     # [OSSO B.V. openvpn-u2f-setup]
     # (Use via-file because we'd have to set --script-security 3 for via-env.)
-    auth-user-pass-verify /etc/openvpn/openvpn-u2f-setup/openvpn-u2f-verify via-filez
+    auth-user-pass-verify /etc/openvpn/openvpn-u2f-setup/openvpn-u2f-verify via-file
     reneg-sec 28800  # 8 hours so we don't need to renegotiate U2F too often
     # Or, if you insist on long lived sessions with only a single interaction:
     #auth-gen-token  # an alternative to longer reneg-sec
