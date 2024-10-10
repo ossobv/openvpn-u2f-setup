@@ -311,6 +311,12 @@ F.A.Q.
   ``openvpn-u2f-ask-password`` works as intended. The console agent will
   automatically close/abort once our agent has provided the credentials.
 
+* After touching the *U2F device*, permission is needed to pass the
+  username and password data back to the requestor. This means you might
+  get prompted by the *PolicyKit Authentication Agent* twice. See the
+  ``openvpn-u2f-ask-password.pkla`` or
+  ``openvpn-u2f-ask-password.rules`` files for fixes.
+
 * ``openvpn-u2f-ask-password`` reports: ``error (-6): authenticator error``
 
   This generally means one of two things:
